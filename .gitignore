@@ -37,3 +37,6 @@ pip-delete-this-directory.txt
 
 # Training Data
 data/
+
+# Model checkpoints
+checkpoints/*
