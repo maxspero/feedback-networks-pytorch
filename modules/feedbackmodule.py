@@ -37,7 +37,6 @@ class FeedbackConvLSTM(nn.Module):
             )
         
     def forward(self, x):
-        # torch.cat? torch.stack?
         end_xts = []
         for t in range(self.num_iterations):
             for d in range(self.physical_depth):
@@ -49,7 +48,5 @@ class FeedbackConvLSTM(nn.Module):
         # prevent memory leak
         for cell in self.convlstm_cells:
             cell.reset_state()
-        #all_xts = torch.stack(end_xts, dim=0)
-        #xts = torch.unbind(all_xts, dim=0)
-        #return all_xts
+
         return end_xts
