@@ -20,26 +20,29 @@ if __name__ == '__main__':
     [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, 
                                             transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=32, shuffle=True, num_workers=4)
     testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, 
                                             transform=transform)
-    testloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=False, num_workers=2)
+    testloader = torch.utils.data.DataLoader(trainset, batch_size=32, shuffle=False, num_workers=4)
 
     feedback_net = FeedbackNet32()
 
     # use GPU
-    # feedback_net.cuda()
+    feedback_net.cuda(device_id=0)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(feedback_net.parameters())
 
-    for epoch in range(3):
+    for epoch in range(50):
         running_losses = np.zeros(8)
         running_loss = 0.0
         for i, data in enumerate(trainloader, 0):
             inputs, labels = data
             inputs, labels = Variable(inputs), Variable(labels)
             
+            inputs = inputs.cuda(device_id=0)
+            labels = labels.cuda(device_id=0)
+
             optimizer.zero_grad()
             outputs = feedback_net(inputs)
             
@@ -50,10 +53,10 @@ if __name__ == '__main__':
             optimizer.step()
             running_losses += [l.data[0] for l in losses]
             running_loss += loss.data[0]
-            if i % 100 == 0:
-                print('Epoch %d, iteration %d: loss=%f' % (epoch, i, running_loss/100))
+            if i % 10 == 0:
+                print('Epoch %d, iteration %d: loss=%f'% (epoch, i, running_loss/10.0))
                 print('Running losses:')
-                print([r/100.0 for r in running_losses])
+                print([r/10.0 for r in running_losses])
                 running_loss = 0.0
                 running_losses = np.zeros(8)
         save_checkpoint({

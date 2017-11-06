@@ -46,18 +46,21 @@ class ConvLSTMCell(nn.Module):
         self.last_cell = None
         self.last_h = None
         
+    def reset_state(self):
+        self.last_cell = None
+        self.last_h = None
     
     def forward(self, x):
         if self.last_cell is None:
             self.last_cell = Variable(torch.zeros(
                 (x.size(0), self.output_size, int(x.size(2)/self.stride), 
                  int(x.size(3)/self.stride))
-            ))
+            )).cuda()
         if self.last_h is None:
             self.last_h = Variable(torch.zeros(
                 (x.size(0), self.output_size, int(x.size(2)/self.stride), 
                  int(x.size(3)/self.stride))
-            ))
+            )).cuda()
         h = self.last_h
         c = self.last_cell
         

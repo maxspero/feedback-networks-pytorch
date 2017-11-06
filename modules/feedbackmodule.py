@@ -23,7 +23,7 @@ class FeedbackConvLSTM(nn.Module):
         self.x_kernel_size = x_kernel_size
         self.h_kernel_size = h_kernel_size
         
-        self.convlstm_cells = []
+        self.convlstm_cells = nn.ModuleList()
         for it in range(self.physical_depth):
             if it == 0:
                 inp_size = input_size
@@ -45,6 +45,10 @@ class FeedbackConvLSTM(nn.Module):
                     x_t = x # x_t^{d-1}
                 x_t = self.convlstm_cells[d].forward(x_t)
             end_xts.append(x_t)
+
+        # prevent memory leak
+        for cell in self.convlstm_cells:
+            cell.reset_state()
         #all_xts = torch.stack(end_xts, dim=0)
         #xts = torch.unbind(all_xts, dim=0)
         #return all_xts
