@@ -17,6 +17,8 @@ parser.add_argument('--dataset', type=str, default='cifar100',
                     help='dataset to use. possibilities: CIFAR10, CIFAR100')
 parser.add_argument('--network', type=str, default='feedback48',
                     help='network to use. possibilities: feedback32, feedback48')
+parser.add_argument('--no-checkpoints', action='store_true', default=False,
+                    help="don't save any checkpoints for this model")
 
 
 if __name__ == '__main__':

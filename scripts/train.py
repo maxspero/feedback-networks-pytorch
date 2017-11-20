@@ -11,7 +11,7 @@ from .create_model import load_checkpoint
 from .load_data import load_train_data
 from .load_data import load_test_data
 
-def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100'):
+def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100', no_checkpoints=False):
     feedback_net, optimizer, epoch_start = create_feedbacknet('feedback48', cuda)
 
     if checkpoint is not None:
@@ -52,7 +52,8 @@ def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100'):
                 print([r/100.0 for r in running_losses])
                 running_loss = 0.0
                 running_losses = np.zeros(feedback_net.num_iterations)
-        save(feedback_net, optimizer, epoch)
+        if not no_checkpoints:
+            save(feedback_net, optimizer, epoch)
     print('done!')
 
 def test(checkpoint=None, cuda=False, test_network=None, dataset='cifar100'):
@@ -77,8 +78,8 @@ def test(checkpoint=None, cuda=False, test_network=None, dataset='cifar100'):
         for i in range(feedback_net.num_iterations):
             _, predicted = torch.max(outputs[i].data, 1)
             if cuda:
-                p = predicted.cpu()
-            correct[i] += (p == labels).sum()
+                predicted = predicted.cpu()
+            correct[i] += (predicted == labels).sum()
 
     for i in range(feedback_net.num_iterations):
       print('Accuracy for iteration %i: %f %%' % (i, 100 * correct[i] / total))
