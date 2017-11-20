@@ -45,7 +45,7 @@ def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100'):
             if i == 0:
                 print('Epoch %d, iteration %d: loss=%f'% (epoch, i, running_loss))
                 print('Running losses:')
-                print([r/100.0 for r in running_losses])
+                print([r for r in running_losses])
             elif i % 100 == 0:
                 print('Epoch %d, iteration %d: loss=%f'% (epoch, i, running_loss/100.0))
                 print('Running losses:')
