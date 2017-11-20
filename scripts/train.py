@@ -56,7 +56,7 @@ def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100'):
     print('done!')
 
 def test(checkpoint=None, cuda=False, test_network=None, dataset='cifar100'):
-    feedback_net, optimizer, epoch_start = create_feedbacknet(cuda)
+    feedback_net, optimizer, epoch_start = create_feedbacknet('feedback48', cuda)
     if checkpoint is not None:
         epoch_start = load_checkpoint(feedback_net, optimizer, checkpoint)
     if test_network is not None:
