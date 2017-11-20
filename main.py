@@ -15,8 +15,6 @@ parser.add_argument('--epochs', type=int, default=20,
                     help='number of epochs to train for')
 parser.add_argument('--dataset', type=str, default='cifar100',
                     help='dataset to use')
-parser.add_argument('--test-every', type=int, default=10,
-                    help='run on test')
 
 
 if __name__ == '__main__':
