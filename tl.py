@@ -26,14 +26,13 @@ epoch = load_checkpoint(feedback_net, optimizer, 'checkpoint20.pth.tar')
 for p in feedback_net.parameters():
   p.requires_grad = False
 
-feedback_net.linear = nn.Linear(64, 10)
-feedback_net.cuda()
-"""
+#feedback_net.linear = nn.Linear(64, 10)
 feedback_net.linear = nn.Sequential(
     nn.Linear(64, 128),
+    nn.ReLU(),
     nn.Linear(128, 10),
-    )
-"""
+)
+feedback_net.cuda()
 
 
 optimizer = optim.Adam(feedback_net.linear.parameters())
