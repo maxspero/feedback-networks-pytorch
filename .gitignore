@@ -40,3 +40,6 @@ data/
 
 # Model checkpoints
 checkpoints/*
+
+# Virtual Environment
+venv/
