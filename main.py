@@ -14,7 +14,9 @@ parser.add_argument('--test', action='store_true', default=False,
 parser.add_argument('--epochs', type=int, default=20,
                     help='number of epochs to train for')
 parser.add_argument('--dataset', type=str, default='cifar100',
-                    help='dataset to use')
+                    help='dataset to use. possibilities: CIFAR10, CIFAR100')
+parser.add_argument('--network', type=str, default='feedback48',
+                    help='network to use. possibilities: feedback32, feedback48')
 
 
 if __name__ == '__main__':
