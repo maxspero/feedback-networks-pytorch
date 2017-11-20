@@ -8,16 +8,23 @@ import torchvision.transforms as transforms
 import numpy as np
 import math
 from .feedbackmodule import FeedbackConvLSTM
+from .feedbackmodule import FeedbackModule
+from .convlstmstack import ConvLSTMStack
 
-class FeedbackNet32(nn.Module):  # 4 physical depth, 8 iterations
+class FeedbackNet48(nn.Module):  # 12 physical depth, 3 iterations
     def __init__(self):
-        super(FeedbackNet32, self).__init__()
-        self.num_iterations = 8
+        super(FeedbackNet48, self).__init__()
+        self.num_iterations = 3
         self.conv = nn.Conv2d(3, 16, 3, 1, 1)
         self.batchnorm = nn.BatchNorm2d(16)
-        self.feedback_conv_lstm = FeedbackConvLSTM(
-            16, [32, 32, 64, 64], [2, 1, 2, 1], self.num_iterations, 3, 3
-        )
+        stack = [
+            ConvLSTMStack(16, 16, 3, 3, 1, 3),
+            ConvLSTMStack(16, 32, 3, 3, 2, 3),
+            ConvLSTMStack(32, 64, 3, 3, 2, 3),
+            ConvLSTMStack(64, 64, 3, 3, 1, 3),
+        ]
+        self.feedback = FeedbackModule(stack, self.num_iterations)
+       
         self.avg_pool = nn.AvgPool2d(8)
         self.linear = nn.Linear(64, 100)
         
@@ -25,7 +32,7 @@ class FeedbackNet32(nn.Module):  # 4 physical depth, 8 iterations
     def forward(self, x):
         x = self.conv(x)
         x = self.batchnorm(x)
-        x_all = self.feedback_conv_lstm(x)
+        x_all = self.feedback(x)
         x_finished = []
         for x_i in x_all:
             x_i = F.relu(x_i)

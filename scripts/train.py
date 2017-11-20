@@ -1,4 +1,4 @@
-import torch
+import torch 
 import torch.nn as nn
 from torch.autograd import Variable
 import torchvision
@@ -11,23 +11,26 @@ from .create_model import load_checkpoint
 from .load_data import load_train_data
 from .load_data import load_test_data
 
-def train():
-    feedback_net, optimizer, epoch_start = create_feedbacknet()
+def train(checkpoint=None, cuda=False, epochs=20):
+    feedback_net, optimizer, epoch_start = create_feedbacknet('feedback48', cuda)
 
-    epoch_start = load_checkpoint(feedback_net, optimizer, 'checkpoint3.pth.tar')
+    if checkpoint is not None:
+        epoch_start = load_checkpoint(feedback_net, optimizer, checkpoint)
+
     criterion = nn.CrossEntropyLoss()
 
     trainloader = load_train_data()
     
-    for epoch in range(epoch_start, 20):
-        running_losses = np.zeros(8)
+    for epoch in range(epoch_start, epochs):
+        running_losses = np.zeros(feedback_net.num_iterations)
         running_loss = 0.0
         for i, data in enumerate(trainloader, 0):
             inputs, labels = data
             inputs, labels = Variable(inputs), Variable(labels)
             
-            inputs = inputs.cuda(device_id=0)
-            labels = labels.cuda(device_id=0)
+            if cuda:
+                inputs = inputs.cuda(device_id=0)
+                labels = labels.cuda(device_id=0)
 
             optimizer.zero_grad()
             outputs = feedback_net(inputs)
@@ -44,29 +47,34 @@ def train():
                 print('Running losses:')
                 print([r/100.0 for r in running_losses])
                 running_loss = 0.0
-                running_losses = np.zeros(8)
+                running_losses = np.zeros(feedback_net.num_iterations)
         save(feedback_net, optimizer, epoch)
     print('done!')
 
-def test():
-    feedback_net, optimizer, epoch_start = create_feedbacknet()
-    epoch_start = load_checkpoint(feedback_net, optimizer, 'checkpoint12.pth.tar')
+def test(checkpoint=None, cuda=False, test_network=None):
+    feedback_net, optimizer, epoch_start = create_feedbacknet(cuda)
+    if checkpoint is not None:
+        epoch_start = load_checkpoint(feedback_net, optimizer, checkpoint)
+    if test_network is not None:
+        feedback_net = test_netowrk
     testloader = load_test_data()
 
-    correct = np.zeros(8)
+    correct = np.zeros(feedback_net.num_iterations)
     total = 0
     for data in testloader:
         inputs, labels = data
         inputs= Variable(inputs)
         
-        inputs = inputs.cuda(device_id=0)
+        if cuda:
+            inputs = inputs.cuda(device_id=0)
 
         outputs = feedback_net(inputs)
         total += labels.size(0)
-        for i in range(8):
+        for i in range(feedback_net.num_iterations):
             _, predicted = torch.max(outputs[i].data, 1)
-            p = predicted.cpu()
+            if cuda:
+                p = predicted.cpu()
             correct[i] += (p == labels).sum()
 
-    for i in range(8):
+    for i in range(feedback_net.num_iterations):
       print('Accuracy for iteration %i: %f %%' % (i, 100 * correct[i] / total))

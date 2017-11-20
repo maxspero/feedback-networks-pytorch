@@ -50,3 +50,25 @@ class FeedbackConvLSTM(nn.Module):
             cell.reset_state()
 
         return end_xts
+
+class FeedbackModule(nn.Module):
+    # physical layers = list of modules, must implement reset_state() method
+    # num_iterations, repeat n times, for physical_depth*num_iterations -> virtual_depth
+    def __init__(self, physical_layers, num_iterations):
+        super(FeedbackModule, self).__init__()
+        self.cells = nn.ModuleList(physical_layers)
+        self.num_iterations = num_iterations
+
+    def forward(self, x):
+        end_xts = []
+        for t in range(self.num_iterations):
+            x_t = x
+            for cell in self.cells:
+                x_t = cell.forward(x_t)
+            end_xts.append(x_t)
+
+        for cell in self.cells:
+            cell.reset_state()
+
+        return end_xts
+
