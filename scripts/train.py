@@ -47,11 +47,9 @@ def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100', no_checkpo
 
             ## Print train accuracy
             train_total += labels.size(0)
-            for i in range(feedback_net.num_iterations):
-                _, predicted = torch.max(outputs[i].data, 1)
-                if cuda:
-                    predicted = predicted.cpu()
-                train_correct[i] += (predicted == labels.data).sum()
+            for it in range(feedback_net.num_iterations):
+                _, predicted = torch.max(outputs[it].data, 1)
+                train_correct[it] += (predicted == labels.data).sum()
             
             if i == 0:
                 print('Epoch %d, iteration %d: loss=%f'% (epoch, i, running_loss))
@@ -81,6 +79,8 @@ def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100', no_checkpo
                 total += labels.size(0)
                 for i in range(feedback_net.num_iterations):
                     _, predicted = torch.max(outputs[i].data, 1)
+                    if cuda:
+                      predicted = predicted.cpu()
                     correct[i] += (predicted == labels).sum()
 
             for i in range(feedback_net.num_iterations):

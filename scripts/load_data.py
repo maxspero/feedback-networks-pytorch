@@ -13,7 +13,7 @@ def load_train_data(dataset, batch_size=32, train_percent = 0.9):
         trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, 
                                                 transform=transform)
     elif dataset == 'cifar10':
-        trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, 
+        trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, 
                                                 transform=transform)
     elif dataset == 'mnist':
         trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, 
