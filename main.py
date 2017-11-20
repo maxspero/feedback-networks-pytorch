@@ -13,14 +13,16 @@ parser.add_argument('--test', action='store_true', default=False,
                     help='test the network')
 parser.add_argument('--epochs', type=int, default=20,
                     help='number of epochs to train for')
+parser.add_argument('--dataset', type=str, default='cifar100',
+                    help='dataset to use')
 
 
 if __name__ == '__main__':
   args = parser.parse_args()
-  print(args)
+  print(args.__dict__)
   if args.train:
-    net = train(checkpoint=args.checkpoint, cuda=args.cuda, epochs=args.epochs)
+    net = train(checkpoint=args.checkpoint, cuda=args.cuda, epochs=args.epochs, dataset=args.dataset)
     if args.test:
       test(cuda=args.cuda, test_network=net)
   elif args.test:
-    test(checkpoint=args.checkpoint, cuda=args.cuda)
+    test(checkpoint=args.checkpoint, cuda=args.cuda, dataset=args.dataset)

@@ -11,7 +11,7 @@ from .create_model import load_checkpoint
 from .load_data import load_train_data
 from .load_data import load_test_data
 
-def train(checkpoint=None, cuda=False, epochs=20):
+def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100'):
     feedback_net, optimizer, epoch_start = create_feedbacknet('feedback48', cuda)
 
     if checkpoint is not None:
@@ -19,7 +19,7 @@ def train(checkpoint=None, cuda=False, epochs=20):
 
     criterion = nn.CrossEntropyLoss()
 
-    trainloader = load_train_data()
+    trainloader = load_train_data(dataset)
     
     for epoch in range(epoch_start, epochs):
         running_losses = np.zeros(feedback_net.num_iterations)
@@ -51,13 +51,13 @@ def train(checkpoint=None, cuda=False, epochs=20):
         save(feedback_net, optimizer, epoch)
     print('done!')
 
-def test(checkpoint=None, cuda=False, test_network=None):
+def test(checkpoint=None, cuda=False, test_network=None, dataset='cifar100'):
     feedback_net, optimizer, epoch_start = create_feedbacknet(cuda)
     if checkpoint is not None:
         epoch_start = load_checkpoint(feedback_net, optimizer, checkpoint)
     if test_network is not None:
         feedback_net = test_netowrk
-    testloader = load_test_data()
+    testloader = load_test_data(dataset)
 
     correct = np.zeros(feedback_net.num_iterations)
     total = 0
