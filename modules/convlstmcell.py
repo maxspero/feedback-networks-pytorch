@@ -58,6 +58,7 @@ class ConvLSTMCell(nn.Module):
             ))
             if x.is_cuda:
                 self.last_cell.cuda()
+            print('last cell:', x.is_cuda, self.last_cell.is_cuda)
         if self.last_h is None:
             self.last_h = Variable(torch.zeros(
                 (x.size(0), self.output_size, int(x.size(2)/self.stride), 
@@ -65,6 +66,8 @@ class ConvLSTMCell(nn.Module):
             ))
             if x.is_cuda:
                 self.last_h.cuda()
+            print('last_h:', x.is_cuda, self.last_h.is_cuda)
+            print('conv ih': self.conv_i_h.is_cuda)
         h = self.last_h
         c = self.last_cell
         
