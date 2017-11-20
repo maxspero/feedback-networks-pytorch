@@ -6,7 +6,7 @@ def get_transform():
     return transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-def load_train_data(dataset, batch_size=32):
+def load_train_data(dataset, batch_size=32, train_percent = 0.9):
     transform = get_transform()
     dataset = dataset.lower()
     if dataset == 'cifar100':
@@ -20,8 +20,12 @@ def load_train_data(dataset, batch_size=32):
                                                 transform=transform)
     else:
         raise ValueError('Invalid dataset')
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4)
-    return trainloader
+    val_split = int(len(trainset) * train_percent)
+    train_sampler = torch.utils.data.sampler.SubsetRandomSampler(range(0, val_split))
+    validation_sampler = torch.utils.data.sampler.SubsetRandomSampler(range(val_split, len(trainset)))
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, num_workers=4, sampler=train_sampler)
+    valloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, num_workers=4, sampler=validation_sampler)
+    return trainloader, valloader
 
 def load_test_data(dataset, batch_size=32):
     transform = get_transform()

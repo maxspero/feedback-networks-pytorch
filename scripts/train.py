@@ -19,11 +19,14 @@ def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100', no_checkpo
 
     criterion = nn.CrossEntropyLoss()
 
-    trainloader = load_train_data(dataset)
+    trainloader, valloader = load_train_data(dataset)
     
     for epoch in range(epoch_start, epochs):
         running_losses = np.zeros(feedback_net.num_iterations)
         running_loss = 0.0
+
+        train_correct = np.zeros(feedback_net.num_iterations) 
+        train_total = 0 
         for i, data in enumerate(trainloader, 0):
             inputs, labels = data
             inputs, labels = Variable(inputs), Variable(labels)
@@ -37,11 +40,19 @@ def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100', no_checkpo
             
             losses = [criterion(out, labels) for out in outputs]
             loss = sum(losses)
-            
             loss.backward(retain_graph=True)
             optimizer.step()
             running_losses += [l.data[0] for l in losses]
             running_loss += loss.data[0]
+
+            ## Print train accuracy
+            train_total += labels.size(0)
+            for i in range(feedback_net.num_iterations):
+                _, predicted = torch.max(outputs[i].data, 1)
+                if cuda:
+                    predicted = predicted.cpu()
+                train_correct[i] += (predicted == labels.data).sum()
+            
             if i == 0:
                 print('Epoch %d, iteration %d: loss=%f'% (epoch, i, running_loss))
                 print('Running losses:')
@@ -52,6 +63,30 @@ def train(checkpoint=None, cuda=False, epochs=20, dataset='cifar100', no_checkpo
                 print([r/100.0 for r in running_losses])
                 running_loss = 0.0
                 running_losses = np.zeros(feedback_net.num_iterations)
+        if True:
+            for i in range(feedback_net.num_iterations):
+                train_acc = train_correct[i] / train_total
+                print('Training accuracy for iteration %i: %f %%' % (i, 100 * train_acc))
+            # Print val % accuracy
+            correct = np.zeros(feedback_net.num_iterations) 
+            total = 0 
+            for data in valloader:
+                inputs, labels = data
+                inputs= Variable(inputs)
+                
+                if cuda:
+                    inputs = inputs.cuda(device_id=0)
+
+                outputs = feedback_net(inputs)
+                total += labels.size(0)
+                for i in range(feedback_net.num_iterations):
+                    _, predicted = torch.max(outputs[i].data, 1)
+                    correct[i] += (predicted == labels).sum()
+
+            for i in range(feedback_net.num_iterations):
+                val_acc = correct[i] / total
+                print('Validation accuracy for iteration %i: %f %%' % (i, 100 * val_acc))
+
         if not no_checkpoints:
             save(feedback_net, optimizer, epoch)
     print('done!')
