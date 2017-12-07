@@ -54,7 +54,6 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
             optimizer.step()
             running_losses += [l.data[0] for l in losses]
             running_loss += loss.data[0]
-            """
             ## Print train accuracy
             train_total += labels.size(0)
             for it in range(feedback_net.num_iterations):
@@ -67,7 +66,6 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
                   train_correct[it] += correct_counter
                 else:
                   train_correct[it] += (predicted == labels.data).sum()
-            """
             if i == 0:
                 print('Epoch %d, iteration %d: loss=%f'% (epoch, i, running_loss))
                 print('Running losses:')
