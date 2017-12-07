@@ -4,6 +4,8 @@ import torch.optim as optim
 from modules.feedback32 import FeedbackNet32
 from modules.feedback48 import FeedbackNet48
 from modules.feedback48_2 import FeedbackNet48_2
+from modules.feedback48_3 import FeedbackNet48_3
+from modules.feedback48_4 import FeedbackNet48_4
 
 
 def save(model, optimizer, epoch):
@@ -33,6 +35,12 @@ def create_feedbacknet(model, cuda):
         feedback_net = FeedbackNet48()
     elif model == 'feedback48_2':
         feedback_net = FeedbackNet48_2()
+    elif model == 'feedback48_3':
+        feedback_net = FeedbackNet48_3()
+    elif model == 'feedback48_4':
+        feedback_net = FeedbackNet48_4()
+    else:
+        raise('Model name %s not found!' % model)
 
 
     # use GPU

@@ -29,4 +29,4 @@ if __name__ == '__main__':
     if args.test:
       test(cuda=args.cuda, test_network=net)
   elif args.test:
-    test(checkpoint=args.checkpoint, cuda=args.cuda, dataset=args.dataset)
+    test(network=args.network, checkpoint=args.checkpoint, cuda=args.cuda, dataset=args.dataset)

@@ -19,10 +19,15 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
     if checkpoint is not None:
         epoch_start = load_checkpoint(feedback_net, optimizer, checkpoint)
 
-    criterion = nn.CrossEntropyLoss()
+    if dataset == 'pascal':
+      criterion = nn.MultiLabelSoftMarginLoss()
+    else:
+      criterion = nn.CrossEntropyLoss()
 
     trainloader, valloader = load_train_data(dataset)
     feedback_net.train(True)
+
+    print('%d batches of 32 images!' % len(trainloader))
 
     for epoch in range(epoch_start, epochs):
         running_losses = np.zeros(feedback_net.num_iterations)
@@ -49,13 +54,20 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
             optimizer.step()
             running_losses += [l.data[0] for l in losses]
             running_loss += loss.data[0]
-
+            """
             ## Print train accuracy
             train_total += labels.size(0)
             for it in range(feedback_net.num_iterations):
                 _, predicted = torch.max(outputs[it].data, 1)
-                train_correct[it] += (predicted == labels.data).sum()
-            
+                if dataset == 'pascal':
+                  correct_counter = 0
+                  for b in range(len(predicted)):
+                    if labels[b, predicted[b]] > 0:
+                      correct_counter += 1
+                  train_correct[it] += correct_counter
+                else:
+                  train_correct[it] += (predicted == labels.data).sum()
+            """
             if i == 0:
                 print('Epoch %d, iteration %d: loss=%f'% (epoch, i, running_loss))
                 print('Running losses:')
@@ -67,11 +79,13 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
                 running_loss = 0.0
                 running_losses = np.zeros(feedback_net.num_iterations)
 
-        for i in range(feedback_net.num_iterations):
-            train_acc = train_correct[i] / train_total
-            print('Running training accuracy for iteration %i: %f %%' % (i, 100 * train_acc))
+        if not no_checkpoints:
+            save(feedback_net, optimizer, epoch)
+        for it in range(feedback_net.num_iterations):
+            train_acc = train_correct[it] / train_total
+            print('Running training accuracy for iteration %i: %f %%' % (it, 100 * train_acc))
         
-        if epoch % 5 == 0:
+        if False and epoch % 5 == 0:
 
             feedback_net.train(False)
             # print train % accuracy
@@ -86,14 +100,14 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
                     inputs = inputs.cuda(device_id=0)
                 outputs = feedback_net(inputs)
                 total += labels.size(0)
-                for i in range(feedback_net.num_iterations):
-                    _, predicted = torch.max(outputs[i].data, 1)
+                for it in range(feedback_net.num_iterations):
+                    _, predicted = torch.max(outputs[it].data, 1)
                     if cuda:
                       predicted = predicted.cpu()
-                    correct[i] += (predicted == labels).sum()
-            for i in range(feedback_net.num_iterations):
-                train_acc = correct[i] / total
-                print('Train accuracy for iteration %i: %f %%' % (i, 100 * train_acc))
+                    correct[it] += (predicted == labels).sum()
+            for it in range(feedback_net.num_iterations):
+                train_acc = correct[it] / total
+                print('Train accuracy for iteration %i: %f %%' % (it, 100 * train_acc))
 
             # Print val % accuracy
             correct = np.zeros(feedback_net.num_iterations) 
@@ -107,22 +121,20 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
 
                 outputs = feedback_net(inputs)
                 total += labels.size(0)
-                for i in range(feedback_net.num_iterations):
-                    _, predicted = torch.max(outputs[i].data, 1)
+                for it in range(feedback_net.num_iterations):
+                    _, predicted = torch.max(outputs[it].data, 1)
                     if cuda:
                       predicted = predicted.cpu()
-                    correct[i] += (predicted == labels).sum()
+                    correct[it] += (predicted == labels).sum()
 
-            for i in range(feedback_net.num_iterations):
-                val_acc = correct[i] / total
-                print('Validation accuracy for iteration %i: %f %%' % (i, 100 * val_acc))
+            for it in range(feedback_net.num_iterations):
+                val_acc = correct[it] / total
+                print('Validation accuracy for iteration %i: %f %%' % (it, 100 * val_acc))
             feedback_net.train(True)
-        if not no_checkpoints:
-            save(feedback_net, optimizer, epoch)
     print('done!')
 
-def test(checkpoint=None, cuda=False, test_network=None, dataset='cifar100'):
-    feedback_net, optimizer, epoch_start = create_feedbacknet('feedback48', cuda)
+def test(network=None, checkpoint=None, cuda=False, test_network=None, dataset='cifar100'):
+    feedback_net, optimizer, epoch_start = create_feedbacknet(network, cuda)
     if checkpoint is not None:
         epoch_start = load_checkpoint(feedback_net, optimizer, checkpoint)
     if test_network is not None:
@@ -131,9 +143,11 @@ def test(checkpoint=None, cuda=False, test_network=None, dataset='cifar100'):
 
     correct = np.zeros(feedback_net.num_iterations)
     total = 0
+
+    feedback_net.train(True)
     for data in testloader:
         inputs, labels = data
-        inputs= Variable(inputs)
+        inputs= Variable(inputs, volatile=True)
         
         if cuda:
             inputs = inputs.cuda(device_id=0)

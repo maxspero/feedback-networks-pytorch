@@ -1,6 +1,7 @@
 import torch
 import torchvision
 import torchvision.transforms as transforms
+from .pascal import VOCSegmentationClasses
 
 def get_transform():
     return transforms.Compose(
@@ -14,6 +15,9 @@ def load_train_data(dataset, batch_size=32, train_percent = 0.9):
                                                 transform=transform)
     elif dataset == 'cifar10':
         trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, 
+                                                transform=transform)
+    elif dataset == 'pascal': # pascal VOC 2012 
+        trainset = VOCSegmentationClasses(root='./data', train=True, download=True, 
                                                 transform=transform)
     elif dataset == 'mnist':
         trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, 
@@ -35,6 +39,9 @@ def load_test_data(dataset, batch_size=32):
                                                 transform=transform)
     elif dataset == 'cifar10':
         testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, 
+                                                transform=transform)
+    elif dataset == 'pascal': # pascal VOC 2012 
+        testset = VOCSegmentationClasses(root='./data', train=False, download=True, 
                                                 transform=transform)
     elif dataset == 'mnist':
         testset = torchvision.datasets.MNIST(root='./data', train=False, download=True, 

@@ -11,9 +11,9 @@ from .feedbackmodule import FeedbackConvLSTM
 from .feedbackmodule import FeedbackModule
 from .convlstmstack import ConvLSTMStack
 
-class FeedbackNet48_2(nn.Module):  # 12 physical depth, 4 iterations
+class FeedbackNet48_4(nn.Module):  # 12 physical depth, 4 iterations
     def __init__(self):
-        super(FeedbackNet48_2, self).__init__()
+        super(FeedbackNet48_4, self).__init__()
         self.num_iterations = 4
         self.conv = nn.Conv2d(3, 16, 3, 1, 1)
         self.batchnorm = nn.BatchNorm2d(16)
@@ -28,8 +28,8 @@ class FeedbackNet48_2(nn.Module):  # 12 physical depth, 4 iterations
         self.dropout1 = nn.Dropout(p=0.5)
         self.linear = nn.Linear(256, 256)
         self.dropout2 = nn.Dropout(p=0.5)
-        self.output = nn.Linear(256, 10)
-        print('Initializing FeedbackNet48_2!')
+        self.output = nn.Linear(256, 100)
+        print('Initializing FeedbackNet48_4!')
         
         
     def forward(self, x):
