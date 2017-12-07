@@ -85,7 +85,7 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
             train_acc = train_correct[it] / train_total
             print('Running training accuracy for iteration %i: %f %%' % (it, 100 * train_acc))
         
-        if False and epoch % 5 == 0:
+        if epoch % 5 == 0:
 
             feedback_net.train(False)
             # print train % accuracy

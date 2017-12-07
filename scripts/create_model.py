@@ -40,7 +40,7 @@ def create_feedbacknet(model, cuda):
     elif model == 'feedback48_4':
         feedback_net = FeedbackNet48_4()
     else:
-        raise('Model name %s not found!' % model)
+        raise Exception('Model name %s not found!' % model)
 
 
     # use GPU
