@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from modules.feedback32 import FeedbackNet32
 from modules.feedback48 import FeedbackNet48
+from modules.feedback48_2 import FeedbackNet48_2
 
 
 def save(model, optimizer, epoch):
@@ -30,6 +31,8 @@ def create_feedbacknet(model, cuda):
         feedback_net = FeedbackNet32()
     elif model == 'feedback48':
         feedback_net = FeedbackNet48()
+    elif model == 'feedback48_2':
+        feedback_net = FeedbackNet48_2()
 
 
     # use GPU

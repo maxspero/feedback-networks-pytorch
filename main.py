@@ -25,7 +25,7 @@ if __name__ == '__main__':
   args = parser.parse_args()
   print(args.__dict__)
   if args.train:
-    net = train(checkpoint=args.checkpoint, cuda=args.cuda, epochs=args.epochs, dataset=args.dataset)
+    net = train(network=args.network, checkpoint=args.checkpoint, cuda=args.cuda, epochs=args.epochs, dataset=args.dataset)
     if args.test:
       test(cuda=args.cuda, test_network=net)
   elif args.test:
