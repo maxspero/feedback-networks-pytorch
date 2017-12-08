@@ -146,7 +146,6 @@ def test(network=None, checkpoint=None, cuda=False, test_network=None, dataset='
     for data in testloader:
         inputs, labels = data
         inputs= Variable(inputs, volatile=True)
-        
         if cuda:
             inputs = inputs.cuda(device_id=0)
 
@@ -156,7 +155,12 @@ def test(network=None, checkpoint=None, cuda=False, test_network=None, dataset='
             _, predicted = torch.max(outputs[i].data, 1)
             if cuda:
                 predicted = predicted.cpu()
-            correct[i] += (predicted == labels).sum()
+            if dataset != 'pascal':
+              correct[i] += (predicted == labels).sum()
+            else:
+              for p in range(predicted.size(0)):
+                if labels[p, predicted[p]] > 0:
+                  correct[i] += 1
 
     for i in range(feedback_net.num_iterations):
       print('Accuracy for iteration %i: %f %%' % (i, 100 * correct[i] / total))
