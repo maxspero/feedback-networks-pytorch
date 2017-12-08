@@ -38,6 +38,8 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
         for i, data in enumerate(trainloader, 0):
             inputs, labels = data
             inputs, labels = Variable(inputs), Variable(labels)
+            if dataset == 'pascal':
+              labels = labels.float()
             
             if cuda:
                 inputs = inputs.cuda(device_id=0)
@@ -49,23 +51,24 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
             losses = [criterion(out, labels) for out in outputs]
             loss = Variable(torch.from_numpy(np.zeros(1))).float().cuda()
             for it in range(len(losses)):
-              loss += (gamma ** it) * losses[it]
+                loss += (gamma ** it) * losses[it]
             loss.backward(retain_graph=True)
             optimizer.step()
             running_losses += [l.data[0] for l in losses]
             running_loss += loss.data[0]
             ## Print train accuracy
             train_total += labels.size(0)
-            for it in range(feedback_net.num_iterations):
-                _, predicted = torch.max(outputs[it].data, 1)
-                if dataset == 'pascal':
-                  correct_counter = 0
-                  for b in range(len(predicted)):
-                    if labels[b, predicted[b]] > 0:
-                      correct_counter += 1
-                  train_correct[it] += correct_counter
-                else:
-                  train_correct[it] += (predicted == labels.data).sum()
+            if dataset != 'pascal':
+                for it in range(feedback_net.num_iterations):
+                    _, predicted = torch.max(outputs[it].data, 1)
+                    if dataset == 'pascal':
+                      correct_counter = 0
+                      for b in range(len(predicted)):
+                        if labels[b, predicted[b]] > 0:
+                          correct_counter += 1
+                      train_correct[it] += correct_counter
+                    else:
+                      train_correct[it] += (predicted == labels.data).sum()
             if i == 0:
                 print('Epoch %d, iteration %d: loss=%f'% (epoch, i, running_loss))
                 print('Running losses:')
@@ -79,11 +82,13 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
 
         if not no_checkpoints:
             save(feedback_net, optimizer, epoch)
-        for it in range(feedback_net.num_iterations):
-            train_acc = train_correct[it] / train_total
-            print('Running training accuracy for iteration %i: %f %%' % (it, 100 * train_acc))
+
+        if dataset != 'pascal':
+            for it in range(feedback_net.num_iterations):
+                train_acc = train_correct[it] / train_total
+                print('Running training accuracy for iteration %i: %f %%' % (it, 100 * train_acc))
         
-        if epoch % 5 == 0:
+        if dataset != 'pascal' and epoch % 5 == 0:
 
             feedback_net.train(False)
             # print train % accuracy
