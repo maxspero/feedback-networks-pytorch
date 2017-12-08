@@ -20,7 +20,9 @@ if __name__ == '__main__':
 cuda = True
 no_checkpoints = False
 epoch_start = 0
-epochs = 5
+epochs = 15
+
+gamma = 1.2
 
 feedback_net, optimizer, epoch = create_feedbacknet('feedback48_4', cuda)
 epoch = load_checkpoint(feedback_net, optimizer, 'checkpoint38_feedback4_cifar100.pth.tar')
@@ -41,7 +43,9 @@ feedback_net.cuda()
 optimizer = optim.Adam([{'params': feedback_net.linear.parameters()}, {'params': feedback_net.output.parameters()}])
 
 criterion = nn.MultiLabelSoftMarginLoss()
-trainloader, valloader = load_train_data('pascal')
+dataset = 'pascal'
+trainloader, valloader = load_train_data(dataset)
+testloader = load_test_data(dataset)
 print('hi')
 for epoch in range(epoch_start, epochs):
   running_losses = np.zeros(feedback_net.num_iterations)
@@ -61,7 +65,10 @@ for epoch in range(epoch_start, epochs):
     outputs = feedback_net(inputs)
 
     losses = [criterion(out, labels) for out in outputs]
-    loss = sum(losses)
+    loss = Variable(torch.from_numpy(np.zeros(1))).float().cuda()
+    for it in range(len(losses)):
+      loss += (gamma ** it) * losses[it]
+    #loss = sum(losses)
     loss.backward(retain_graph=True)
     optimizer.step()
     running_losses += [l.data[0] for l in losses]
@@ -76,7 +83,7 @@ for epoch in range(epoch_start, epochs):
         train_correct[i] += (predicted == labels).sum()
       else:
         for p in range(predicted.size(0)):
-          if labels[p, predicted[p]] > 0:
+          if (labels.data[p, predicted[p]] > 0):
             train_correct[i] += 1
 
     if i == 0:
@@ -121,3 +128,30 @@ for epoch in range(epoch_start, epochs):
 
   save(feedback_net, optimizer, epoch)
 print('done!')
+
+
+correct = np.zeros(feedback_net.num_iterations)
+total = 0
+
+feedback_net.train(True)
+for data in testloader:
+  inputs, labels = data
+  inputs= Variable(inputs, volatile=True)
+  if cuda:
+      inputs = inputs.cuda(device_id=0)
+
+  outputs = feedback_net(inputs)
+  total += labels.size(0)
+  for i in range(feedback_net.num_iterations):
+      _, predicted = torch.max(outputs[i].data, 1)
+      if cuda:
+          predicted = predicted.cpu()
+      if dataset != 'pascal':
+        correct[i] += (predicted == labels).sum()
+      else:
+        for p in range(predicted.size(0)):
+          if labels[p, predicted[p]] > 0:
+            correct[i] += 1
+
+for i in range(feedback_net.num_iterations):
+  print('Accuracy for iteration %i: %f %%' % (i, 100 * correct[i] / total))
