@@ -20,7 +20,7 @@ if __name__ == '__main__':
 cuda = True
 no_checkpoints = False
 epoch_start = 0
-epochs = 15
+epochs = 31
 
 gamma = 1.2
 
@@ -38,9 +38,11 @@ feedback_net.output = nn.Sequential(
     nn.ReLU(),
     nn.Linear(128, 20),
 )
-feedback_net.cuda()
 
 optimizer = optim.Adam([{'params': feedback_net.linear.parameters()}, {'params': feedback_net.output.parameters()}])
+
+#epoch_start = load_checkpoint(feedback_net, optimizer, 'checkpoint14.pth.tar')
+feedback_net.cuda()
 
 criterion = nn.MultiLabelSoftMarginLoss()
 dataset = 'pascal'

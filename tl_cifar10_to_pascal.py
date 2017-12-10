@@ -20,7 +20,7 @@ if __name__ == '__main__':
 cuda = True
 no_checkpoints = False
 epoch_start = 0
-epochs = 15
+epochs = 30
 
 gamma = 1.2
 
