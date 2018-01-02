@@ -16,17 +16,18 @@ parser.add_argument('--epochs', type=int, default=20,
 parser.add_argument('--dataset', type=str, default='cifar100',
                     help='dataset to use. possibilities: CIFAR10, CIFAR100')
 parser.add_argument('--network', type=str, default='feedback48',
-                    help='network to use. possibilities: feedback32, feedback48')
-parser.add_argument('--no-checkpoints', action='store_true', default=False,
-                    help="don't save any checkpoints for this model")
-
+                    help='network to use. possibilities: feedbacknet, feedback48')
+parser.add_argument('--classes', type=int, default=10,
+                    help="number of output classes")
 
 if __name__ == '__main__':
   args = parser.parse_args()
   print(args.__dict__)
   if args.train:
-    net = train(network=args.network, checkpoint=args.checkpoint, cuda=args.cuda, epochs=args.epochs, dataset=args.dataset)
+    net = train(network=args.network, checkpoint=args.checkpoint, cuda=args.cuda, 
+                epochs=args.epochs, dataset=args.dataset, n_classes=args.classes)
     if args.test:
       test(cuda=args.cuda, test_network=net)
   elif args.test:
-    test(network=args.network, checkpoint=args.checkpoint, cuda=args.cuda, dataset=args.dataset)
+    test(network=args.network, checkpoint=args.checkpoint, cuda=args.cuda, 
+         dataset=args.dataset, n_classes=args.classes)

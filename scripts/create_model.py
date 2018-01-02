@@ -1,11 +1,7 @@
 import torch 
 import torch.nn as nn
 import torch.optim as optim
-from modules.feedback32 import FeedbackNet32
-from modules.feedback48 import FeedbackNet48
-from modules.feedback48_2 import FeedbackNet48_2
-from modules.feedback48_3 import FeedbackNet48_3
-from modules.feedback48_4 import FeedbackNet48_4
+from modules.feedbacknet import FeedbackNet
 
 
 def save(model, optimizer, epoch):
@@ -28,25 +24,13 @@ def load_checkpoint(model, optimizer, filename='checkpoint.pth.tar'):
     return checkpoint['epoch']
 
 
-def create_feedbacknet(model, cuda):
-    if model == 'feedback32':
-        feedback_net = FeedbackNet32()
-    elif model == 'feedback48':
-        feedback_net = FeedbackNet48()
-    elif model == 'feedback48_2':
-        feedback_net = FeedbackNet48_2()
-    elif model == 'feedback48_3':
-        feedback_net = FeedbackNet48_3()
-    elif model == 'feedback48_4':
-        feedback_net = FeedbackNet48_4()
+def create_feedbacknet(model, cuda, n_classes):
+    if model == 'feedback48' or model == 'feedbacknet':
+        feedback_net = FeedbackNet(n_classes)
     else:
         raise Exception('Model name %s not found!' % model)
-
-
     # use GPU
     if cuda:
         feedback_net.cuda(device_id=0)
-
     optimizer = optim.Adam(feedback_net.parameters())
-
     return feedback_net, optimizer, 0

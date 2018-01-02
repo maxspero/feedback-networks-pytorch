@@ -11,8 +11,8 @@ from .create_model import load_checkpoint
 from .load_data import load_train_data
 from .load_data import load_test_data
 
-def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar100', no_checkpoints=False):
-    feedback_net, optimizer, epoch_start = create_feedbacknet(network, cuda)
+def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar100', n_classes=10):
+    feedback_net, optimizer, epoch_start = create_feedbacknet(network, cuda, n_classes)
 
     gamma = 1.2 # gamma > 1, prioritize correct result at end. gamma < 1, prioritize earliest good results
 
@@ -80,8 +80,8 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
                 running_loss = 0.0
                 running_losses = np.zeros(feedback_net.num_iterations)
 
-        if not no_checkpoints:
-            save(feedback_net, optimizer, epoch)
+
+        save(feedback_net, optimizer, epoch)
 
         if dataset != 'pascal':
             for it in range(feedback_net.num_iterations):
@@ -136,8 +136,8 @@ def train(network=None, checkpoint=None, cuda=False, epochs=20, dataset='cifar10
             feedback_net.train(True)
     print('done!')
 
-def test(network=None, checkpoint=None, cuda=False, test_network=None, dataset='cifar100'):
-    feedback_net, optimizer, epoch_start = create_feedbacknet(network, cuda)
+def test(network=None, checkpoint=None, cuda=False, test_network=None, dataset='cifar100', n_classes=10):
+    feedback_net, optimizer, epoch_start = create_feedbacknet(network, cuda, n_classes)
     if checkpoint is not None:
         epoch_start = load_checkpoint(feedback_net, optimizer, checkpoint)
     if test_network is not None:
